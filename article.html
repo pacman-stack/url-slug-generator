@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Article — URL Slug Generator Blog</title>
+<meta name="description" content="Blog article about URL slugs and SEO best practices.">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0f0f;
+  --surface: #1a1a2e;
+  --surface2: #16213e;
+  --border: #2a2a4a;
+  --text: #e0e0e0;
+  --text-muted: #8888aa;
+  --accent: #00d4ff;
+  --accent-hover: #00b8e6;
+  --accent-glow: rgba(0, 212, 255, 0.15);
+  --radius: 12px;
+  --mono: 'SF Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  transition: color 0.2s;
+}
+
+.back-link:hover { color: var(--accent); }
+
+.article-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.article-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+}
+
+.article-header-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+
+.article-header-meta .read-time { color: var(--accent); }
+
+/* Rendered Markdown */
+.article-content h1 {
+  font-size: 1.5rem;
+  margin: 2rem 0 0.75rem;
+  font-weight: 700;
+}
+
+.article-content h2 {
+  font-size: 1.3rem;
+  margin: 2rem 0 0.75rem;
+  color: var(--text);
+}
+
+.article-content h3 {
+  font-size: 1.1rem;
+  color: var(--accent);
+  margin: 1.5rem 0 0.5rem;
+}
+
+.article-content p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+.article-content ul, .article-content ol {
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.article-content li {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  margin-bottom: 0.35rem;
+}
+
+.article-content strong { color: var(--text); }
+
+.article-content a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.article-content a:hover { text-decoration: underline; }
+
+.article-content code {
+  background: var(--surface);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  color: var(--accent);
+}
+
+.article-content pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.article-content pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.article-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.article-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.article-content th, .article-content td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.article-content th {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.article-content td {
+  color: var(--text-muted);
+}
+
+.loading {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem 0;
+}
+
+footer {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="blog.html" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+    Back to Blog
+  </a>
+
+  <div class="article-header" id="articleHeader">
+    <p class="loading">Loading article...</p>
+  </div>
+  <div class="article-content" id="articleContent"></div>
+
+  <footer>URL Slug Generator — Free online tool</footer>
+</div>
+
+<script>
+const BLOG_ARTICLES = [
+  { slug: 'what-is-a-url-slug', title: 'What Is a URL Slug? A Complete Beginner\'s Guide', date: '2024-12-15', readTime: '6 min read' },
+  { slug: 'seo-friendly-urls-guide', title: 'How to Create SEO-Friendly URLs: The Complete Guide', date: '2024-11-28', readTime: '8 min read' },
+  { slug: 'url-slug-best-practices', title: '10 URL Slug Best Practices for Better Rankings', date: '2024-11-10', readTime: '7 min read' },
+  { slug: 'how-to-create-perfect-url-slug', title: 'How to Create the Perfect URL Slug (Step-by-Step)', date: '2024-10-22', readTime: '5 min read' },
+  { slug: 'url-slugs-vs-url-paths', title: 'URL Slugs vs URL Paths: What\'s the Difference?', date: '2024-10-05', readTime: '5 min read' },
+  { slug: 'common-url-slug-mistakes', title: '7 Common URL Slug Mistakes That Hurt Your SEO', date: '2024-09-18', readTime: '6 min read' }
+];
+
+function parseFrontMatter(md) {
+  md = md.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const match = md.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (!match) return { meta: {}, content: md };
+  const meta = {};
+  match[1].split('\n').forEach(line => {
+    const idx = line.indexOf(':');
+    if (idx > 0) {
+      let key = line.slice(0, idx).trim();
+      let val = line.slice(idx + 1).trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      meta[key] = val;
+    }
+  });
+  return { meta, content: match[2] };
+}
+
+function inline(text) {
+  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return text;
+}
+
+function parseMarkdown(md) {
+  let html = md
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Code blocks
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    return `<pre><code>${code.trim()}</code></pre>`;
+  });
+
+  // Tables
+  html = html.replace(/(?:^|\n)(\|.+\|)\n(\|[-| :]+\|)\n((?:\|.+\|\n?)+)/g, (_, headerRow, sepRow, bodyRows) => {
+    const headers = headerRow.split('|').filter(c => c.trim()).map(c => `<th>${inline(c.trim())}</th>`).join('');
+    const rows = bodyRows.trim().split('\n').map(row => {
+      const cells = row.split('|').filter(c => c.trim()).map(c => `<td>${inline(c.trim())}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+    return `<table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+  });
+
+  const lines = html.split('\n');
+  let result = [];
+  let inList = false;
+  let listType = '';
+  let inPre = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line.includes('<pre>')) { inPre = true; }
+    if (line.includes('</pre>')) { inPre = false; result.push(line); continue; }
+    if (inPre) { result.push(line); continue; }
+
+    // Skip table HTML (already processed)
+    if (line.startsWith('<table') || line.startsWith('</table') || line.startsWith('<thead') || line.startsWith('</thead') || line.startsWith('<tbody') || line.startsWith('</tbody') || line.startsWith('<tr') || line.startsWith('</tr')) {
+      if (inList) { result.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      result.push(line);
+      continue;
+    }
+
+    const h3Match = line.match(/^### (.+)$/);
+    if (h3Match) {
+      if (inList) { result.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      result.push(`<h3>${inline(h3Match[1])}</h3>`);
+      continue;
+    }
+    const h2Match = line.match(/^## (.+)$/);
+    if (h2Match) {
+      if (inList) { result.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      result.push(`<h2>${inline(h2Match[1])}</h2>`);
+      continue;
+    }
+    const h1Match = line.match(/^# (.+)$/);
+    if (h1Match) {
+      if (inList) { result.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      result.push(`<h1>${inline(h1Match[1])}</h1>`);
+      continue;
+    }
+
+    const bqMatch = line.match(/^&gt; (.+)$/);
+    if (bqMatch) {
+      if (inList) { result.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+      result.push(`<blockquote><p>${inline(bqMatch[1])}</p></blockquote>`);
+      continue;
+    }
+
+    const ulMatch = line.match(/^[-*] (.+)$/);
+    if (ulMatch) {
+      if (!inList || listType !== 'ul') {
+        if (inList) result.push(listType === 'ul' ? '</ul>' : '</ol>');
+        result.push('<ul>');
+        inList = true;
+        listType = 'ul';
+      }
+      result.push(`<li>${inline(ulMatch[1])}</li>`);
+      continue;
+    }
+
+    const olMatch = line.match(/^\d+\. (.+)$/);
+    if (olMatch) {
+      if (!inList || listType !== 'ol') {
+        if (inList) result.push(listType === 'ul' ? '</ul>' : '</ol>');
+        result.push('<ol>');
+        inList = true;
+        listType = 'ol';
+      }
+      result.push(`<li>${inline(olMatch[1])}</li>`);
+      continue;
+    }
+
+    if (inList && line.trim() === '') {
+      result.push(listType === 'ul' ? '</ul>' : '</ol>');
+      inList = false;
+    }
+
+    if (line.trim() === '') continue;
+
+    if (inList) { result.push(listType === 'ul' ? '</ul>' : '</ol>'); inList = false; }
+    result.push(`<p>${inline(line)}</p>`);
+  }
+
+  if (inList) result.push(listType === 'ul' ? '</ul>' : '</ol>');
+  return result.join('\n');
+}
+
+// Load article from ?slug= param
+const slug = new URLSearchParams(window.location.search).get('slug');
+const article = BLOG_ARTICLES.find(a => a.slug === slug);
+
+if (!slug || !article) {
+  document.getElementById('articleHeader').innerHTML = '<h1>Article not found</h1>';
+  document.getElementById('articleContent').innerHTML = '<p>The article you\'re looking for doesn\'t exist. <a href="blog.html">Browse all articles</a>.</p>';
+} else {
+  document.title = article.title + ' — URL Slug Generator Blog';
+
+  fetch('./blog/' + slug + '.md')
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    })
+    .then(md => {
+      const { meta, content } = parseFrontMatter(md);
+      const title = meta.title || article.title;
+      const date = meta.date || article.date;
+      const readTime = meta.readTime || article.readTime;
+
+      document.getElementById('articleHeader').innerHTML =
+        '<h1>' + title + '</h1>' +
+        '<div class="article-header-meta">' +
+          '<span>' + date + '</span>' +
+          '<span class="read-time">' + readTime + '</span>' +
+        '</div>';
+
+      try {
+        document.getElementById('articleContent').innerHTML = parseMarkdown(content);
+      } catch (e) {
+        console.error('Markdown parse error:', e);
+        document.getElementById('articleContent').innerHTML = '<p>Error rendering article.</p>';
+      }
+    })
+    .catch(err => {
+      console.error('Fetch error:', err);
+      document.getElementById('articleHeader').innerHTML = '<h1>' + article.title + '</h1>';
+      document.getElementById('articleContent').innerHTML = '<p>Failed to load article. Make sure you are serving this site via a local HTTP server (e.g. <code>python3 -m http.server</code>), not opening the file directly.</p>';
+    });
+}
+</script>
+</body>
+</html>
